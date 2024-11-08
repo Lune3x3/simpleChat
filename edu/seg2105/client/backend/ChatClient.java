@@ -4,7 +4,7 @@
 
 package edu.seg2105.client.backend;
 
-import ocsf.client.*;
+import client.*;
 
 import java.io.*;
 
@@ -27,6 +27,7 @@ public class ChatClient extends AbstractClient
    * the display method in the client.
    */
   ChatIF clientUI; 
+  private String id;
 
   
   //Constructors ****************************************************
@@ -39,12 +40,15 @@ public class ChatClient extends AbstractClient
    * @param clientUI The interface type variable.
    */
   
-  public ChatClient(String host, int port, ChatIF clientUI) 
+  public ChatClient(String id, String host, int port, ChatIF clientUI) 
     throws IOException 
   {
     super(host, port); //Call the superclass constructor
+    this.id = id;
     this.clientUI = clientUI;
+    System.out.println(id + " has logged on");
     openConnection();
+    sendToServer("#login " + id);
   }
 
   
@@ -59,7 +63,6 @@ public class ChatClient extends AbstractClient
   {
     clientUI.display(msg.toString());
     
-    
   }
 
   /**
@@ -71,7 +74,58 @@ public class ChatClient extends AbstractClient
   {
     try
     {
-      sendToServer(message);
+      if (message.charAt(0) == '#') {
+    	  String[] mSplit = message.split(" ");
+    	  if (message.equals("#quit")) {
+    		  quit();
+    	  }
+    	  else if (message.equals("#logoff")) {
+    		  closeConnection();
+    	  }
+    	  else if (mSplit[0].equals("#sethost")) {
+    		  if (!isConnected()) {
+    			  try {
+    				  setHost(mSplit[1]);
+    			  }
+    			  catch (Exception e) {
+    				  clientUI.display("enter a valid host");
+    			  }
+    		  }
+    		  else {
+    			  clientUI.display("Logout first");
+    		  }
+    	  }
+    	  else if (mSplit[0].equals("#setport")) {
+    		  if (!isConnected()) {
+    			  try {
+    				  setPort(Integer.getInteger(mSplit[1]));
+    			  }
+    			  catch (Exception e) {
+    				  clientUI.display("enter a valid port");
+    			  }
+    		  }
+    		  else {
+    			  clientUI.display("Logout first");
+    		  }
+    	  }
+    	  else if (message.equals("#login")) {
+    		  if (!isConnected()) {
+    			  openConnection();
+    		  }
+    		  else {
+    			  clientUI.display("logout first");
+    		  }
+    	  }
+    	  else if (message == "#gethost") {
+    		  clientUI.display(getHost());
+    	  }
+    	  else if (message == "#getPort") {
+    		  clientUI.display(String.valueOf(getPort()));
+    	  }
+      }
+      else {
+    	sendToServer(message);
+      }
     }
     catch(IOException e)
     {
@@ -92,6 +146,14 @@ public class ChatClient extends AbstractClient
     }
     catch(IOException e) {}
     System.exit(0);
+  }
+  
+  public void connectionClosed() {
+	  clientUI.display("Server connection closed");
+  }
+  
+  public void connectionException(Exception exec) {
+	  clientUI.display("Connection closed due to: " + exec.getMessage());
   }
 }
 //End of ChatClient class

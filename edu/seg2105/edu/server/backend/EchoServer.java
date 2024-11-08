@@ -4,7 +4,8 @@ package edu.seg2105.edu.server.backend;
 // license found at www.lloseng.com 
 
 
-import ocsf.server.*;
+import edu.seg2105.client.common.ChatIF;
+import server.*;
 
 /**
  * This class overrides some of the methods in the abstract 
@@ -24,6 +25,8 @@ public class EchoServer extends AbstractServer
    */
   final public static int DEFAULT_PORT = 5555;
   
+  ChatIF serverUI;
+  
   //Constructors ****************************************************
   
   /**
@@ -35,6 +38,8 @@ public class EchoServer extends AbstractServer
   {
     super(port);
   }
+  
+  
 
   
   //Instance methods ************************************************
@@ -48,8 +53,35 @@ public class EchoServer extends AbstractServer
   public void handleMessageFromClient
     (Object msg, ConnectionToClient client)
   {
-    System.out.println("Message received: " + msg + " from " + client);
-    this.sendToAllClients(msg);
+	String message = String.valueOf(msg);
+	String[] mSplit = message.split(" ");
+	
+	
+	if (mSplit[0].equals("#login")) {
+		if (client.getInfo("id") == null) {
+			try {
+				client.setInfo("id", mSplit[1]);
+				System.out.println("Welcome " + mSplit[1]);
+				this.sendToAllClients("Welcome " + mSplit[1]);
+			}
+			catch (Exception e) {
+				System.out.println("Enter a valid id");
+			}
+		}
+		else {
+			try {
+				client.sendToClient("Already logged in, closing connection");
+				client.close();
+			}
+			catch (Exception e){
+				System.out.println(e.getMessage());
+			}
+		}
+	}
+	else {
+		System.out.println("Message received: " + msg + " from " + client.getInfo("id"));
+	    this.sendToAllClients(client.getInfo("id") + ": " + msg);
+	}
   }
     
   /**
@@ -82,29 +114,23 @@ public class EchoServer extends AbstractServer
    * @param args[0] The port number to listen on.  Defaults to 5555 
    *          if no argument is entered.
    */
-  public static void main(String[] args) 
-  {
-    int port = 0; //Port to listen on
-
-    try
-    {
-      port = Integer.parseInt(args[0]); //Get port from command line
-    }
-    catch(Throwable t)
-    {
-      port = DEFAULT_PORT; //Set port to 5555
-    }
-	
-    EchoServer sv = new EchoServer(port);
-    
-    try 
-    {
-      sv.listen(); //Start listening for connections
-    } 
-    catch (Exception ex) 
-    {
-      System.out.println("ERROR - Could not listen for clients!");
-    }
+  
+  public void clientDisconnected(ConnectionToClient client) {
+	  try {
+		  client.sendToClient("Welcome!");
+	  }
+	  catch(Exception e) {
+		  System.out.println(e.getMessage());
+	  }
+  }
+  
+  public void clientConnected(ConnectionToClient client) {
+	  try {
+		  client.sendToClient("Goodbye!");
+	  }
+	  catch(Exception e) {
+		  System.out.println(e.getMessage());
+	  }
   }
 }
 //End of EchoServer class

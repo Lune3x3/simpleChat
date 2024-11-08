@@ -28,7 +28,7 @@ public class ClientConsole implements ChatIF
   final public static int DEFAULT_PORT = 5555;
   
   //Instance variables **********************************************
-  
+    
   /**
    * The instance of the client that created this ConsoleChat.
    */
@@ -50,11 +50,11 @@ public class ClientConsole implements ChatIF
    * @param host The host to connect to.
    * @param port The port to connect on.
    */
-  public ClientConsole(String host, int port) 
+  public ClientConsole(String id, String host, int port) 
   {
     try 
     {
-      client= new ChatClient(host, port, this);
+      client= new ChatClient(id, host, port, this);
       
       
     } 
@@ -118,17 +118,27 @@ public class ClientConsole implements ChatIF
   public static void main(String[] args) 
   {
     String host = "";
-
+    int setPort;
+    String id = "";
+    try {
+    	id = args[0];
+    }
+    catch (Exception e) {
+    	System.out.println("Provide a valid id");
+    	System.exit(1);
+    }
 
     try
     {
-      host = args[0];
+      host = args[1];
+      setPort = Integer.valueOf(args[2]);
     }
     catch(ArrayIndexOutOfBoundsException e)
     {
       host = "localhost";
+      setPort = DEFAULT_PORT;
     }
-    ClientConsole chat= new ClientConsole(host, DEFAULT_PORT);
+    ClientConsole chat= new ClientConsole(id, host, setPort);
     chat.accept();  //Wait for console data
   }
 }
