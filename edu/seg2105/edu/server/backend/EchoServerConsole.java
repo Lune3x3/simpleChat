@@ -41,20 +41,17 @@ public class EchoServerConsole implements ChatIF {
 				display("stopped listening for connections");
 			}
 			else if (msg.equals("#close")) {
-				server.stopListening();
-				for (Thread client : server.getClientConnections()) {
+				Thread[] clientThreadList = server.getClientConnections();
+				for (int i=0; i<clientThreadList.length; i++)
+				{
 					try
 					{
-						((ConnectionToClient)client).close();
+						((ConnectionToClient)clientThreadList[i]).close();
 					}
-					catch (Exception ex) {}
+					// Ignore all exceptions when closing clients.
+					catch(Exception ex) {}
 				}
-				try {
-					server.close();
-				}
-				catch (Exception e){
-					System.out.println(e.getMessage());
-				}
+				
 			}
 			else if (mSplit[0].equals("#setport")) {
 				if (server.isListening() == false) {
@@ -92,8 +89,10 @@ public class EchoServerConsole implements ChatIF {
 		try {
 			String message;
 			
-			message = fromConsole.nextLine();
-			serverMessages(message);
+			while (true) {
+				message = fromConsole.nextLine();
+				serverMessages(message);
+			}
 		}
 		catch (Exception e) {
 			System.out.println(e.getMessage());

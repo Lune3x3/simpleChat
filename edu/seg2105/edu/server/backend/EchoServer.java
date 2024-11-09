@@ -117,7 +117,7 @@ public class EchoServer extends AbstractServer
   
   public void clientDisconnected(ConnectionToClient client) {
 	  try {
-		  client.sendToClient("Welcome!");
+		  client.sendToClient("Goodbye!");
 	  }
 	  catch(Exception e) {
 		  System.out.println(e.getMessage());
@@ -126,7 +126,7 @@ public class EchoServer extends AbstractServer
   
   public void clientConnected(ConnectionToClient client) {
 	  try {
-		  client.sendToClient("Goodbye!");
+		  client.sendToClient("Welcome!");
 	  }
 	  catch(Exception e) {
 		  System.out.println(e.getMessage());
